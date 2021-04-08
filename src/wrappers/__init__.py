@@ -106,5 +106,3 @@ class TrainMonitor:
 
     def get_avg_score(self):
         return {k:v/(self.n + 1) for k,v in self.score_dict_sum.items()}
-
-    

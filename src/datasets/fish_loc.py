@@ -32,9 +32,7 @@ class FishLoc:
     def __getitem__(self, index):
         name = self.img_names[index]
         image_pil = Image.open(self.path + "/images/"+ name + ".jpg")
-       
         image = self.transform(image_pil)
-
         # get points
         points = Image.open(self.path + "/masks/"+ name + ".png")#[..., np.newaxis]
         points = np.array(points).clip(0,1)
@@ -45,6 +43,8 @@ class FishLoc:
             pass
         else:
             assert int(np.count_nonzero(points)) == counts[0]
+        print("counts.item(): "+ str(counts.item()))
+        print("self.counts[index]: "+ str(self.counts[index]))
         assert counts.item() == self.counts[index]
 
 

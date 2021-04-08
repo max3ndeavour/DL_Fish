@@ -1,0 +1,9 @@
+{
+    "batch_size": 1,
+    "dataset": "fish_loc",
+    "max_epoch": 1000,
+    "model": "fcn8",
+    "task": "loc",
+    "transform": "rgb_normalize",
+    "wrapper": "loc_wrapper"
+}

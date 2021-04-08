@@ -16,6 +16,8 @@ from skimage.segmentation import find_boundaries
 from scipy import ndimage
 from haven import haven_utils as hu
 from haven import haven_img as hi
+import cv2
+from skimage.segmentation import mark_boundaries
 
 class LocWrapper(torch.nn.Module):
     def __init__(self, model, opt):
@@ -59,8 +61,36 @@ class LocWrapper(torch.nn.Module):
         return {'val_samples':images.shape[0],'val_loc': abs(float((np.unique(blobs)!=0).sum() - 
                                 (points!=0).sum()))}
         
-    
-        
+
+    @torch.no_grad()
+    def predict_video(self, video_path, base_dir_video, epoch):
+        self.eval()
+        if not os.path.exists(base_dir_video):
+            os.makedirs(base_dir_video)
+        save_video_path = os.path.join(base_dir_video, f"{epoch}.avi")
+        print(f"saveing video to: {save_video_path}")
+        trans = transforms.Compose([transforms.ToTensor()])
+        cap = cv2.VideoCapture(video_path)
+        out = cv2.VideoWriter(save_video_path, cv2.VideoWriter_fourcc(*"MJPG"), 30,(1920,1080))
+        counter = 0
+        while(True):
+            counter += 1
+            print(f"counter: {counter}")
+            ret, o_frame = cap.read()
+            if o_frame is None:
+                break
+            frame = trans(o_frame)
+            frame = frame[None,:,:,:].cuda()
+            logits = self.model.forward(frame)
+            probs = logits.sigmoid().cpu().numpy()
+            blobs = lcfcn_loss.get_blobs(probs=probs)
+            pred_blobs = blobs.squeeze()
+            result = hi.mask_on_image(o_frame, pred_blobs)
+            result = (result * 255).astype('uint8')
+            out.write(result)
+        out.release()
+
+
     @torch.no_grad()
     def vis_on_batch(self, batch, savedir_image):
         self.eval()
