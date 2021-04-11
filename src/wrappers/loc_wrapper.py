@@ -6,10 +6,10 @@ import os
 import numpy as np
 import time
 from lcfcn import lcfcn_loss
-from src import utils as ut
+from DeepFish.src import utils as ut
 from sklearn.metrics import confusion_matrix
 import skimage
-from src import wrappers
+from DeepFish.src import wrappers
 from skimage import morphology as morph
 from skimage.segmentation import watershed
 from skimage.segmentation import find_boundaries
