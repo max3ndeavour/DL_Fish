@@ -72,7 +72,10 @@ class LocWrapper(torch.nn.Module):
         trans = transforms.Compose([transforms.ToTensor()])
         cap = cv2.VideoCapture(original_video_path)
         ALL_FRAMES_COUNT = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        out = cv2.VideoWriter(predicted_video_path.replace('mp4', 'avi'), cv2.VideoWriter_fourcc(*"MJPG"), 30,(1920,1080))
+        VIDEO_WIDTH  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        VIDEO_HEIGHT = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        VIDEO_FPS = cap.get(cv2.CAP_PROP_FPS)
+        out = cv2.VideoWriter(predicted_video_path, cv2.VideoWriter_fourcc(*"MJPG"), VIDEO_FPS,(VIDEO_WIDTH,VIDEO_HEIGHT))
         frameCounter = 0
         while(True):
             isCanceled = checkUploadCanceled(item_id)
