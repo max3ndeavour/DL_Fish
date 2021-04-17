@@ -22,7 +22,7 @@ from haven import haven_wizard as hw
 import pickle
 import DeepFish.exp_configs as exp_configs
 
-def trainval(checkUploadCanceled, onProgressUpload, savedir="DeepFish/croatia_result2/c21f602e9488d5dda34d493d345d128a"):
+def trainval(checkUploadCanceled, onProgressUpload,item_id, savedir="DeepFish/croatia_result2/c21f602e9488d5dda34d493d345d128a"):
     """
     exp_dict: dictionary defining the hyperparameters of the experiment
     savedir: the directory where the experiment will be saved
@@ -48,7 +48,8 @@ def trainval(checkUploadCanceled, onProgressUpload, savedir="DeepFish/croatia_re
     model_path = os.path.join(savedir, "model_state_dict.pth")
     if os.path.exists(model_path):
         model.load_state_dict(torch.load(model_path))
-        model.predict_video(checkUploadCanceled, onProgressUpload, "DeepFish/fish_video.mp4",video_output_path, 10001 )
+        model.predict_video(checkUploadCanceled, onProgressUpload, item_id,"DeepFish/fish_video.mp4",video_output_path, 10001 )
+    print("FINISH!!!!!")
 
 if __name__ == '__main__':
     trainval("croatia_result2/c21f602e9488d5dda34d493d345d128a" )
