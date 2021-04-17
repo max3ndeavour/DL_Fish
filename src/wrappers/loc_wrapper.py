@@ -63,7 +63,7 @@ class LocWrapper(torch.nn.Module):
         
 
     @torch.no_grad()
-    def predict_video(self, video_path, base_dir_video, epoch):
+    def predict_video(self, checkUploadCanceled, onProgressUpload, video_path, base_dir_video, epoch):
         self.eval()
         if not os.path.exists(base_dir_video):
             os.makedirs(base_dir_video)
@@ -71,11 +71,15 @@ class LocWrapper(torch.nn.Module):
         print(f"saveing video to: {save_video_path}")
         trans = transforms.Compose([transforms.ToTensor()])
         cap = cv2.VideoCapture(video_path)
+        ALL_FRAMES_COUNT = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         out = cv2.VideoWriter(save_video_path, cv2.VideoWriter_fourcc(*"MJPG"), 30,(1920,1080))
-        counter = 0
+        frameCounter = 0
         while(True):
-            counter += 1
-            print(f"counter: {counter}")
+            isCanceled = checkUploadCanceled()
+            if isCanceled:
+                break
+            onProgressUpload(frameCounter / ALL_FRAMES_COUNT)
+            frameCounter += 1
             ret, o_frame = cap.read()
             if o_frame is None:
                 break
