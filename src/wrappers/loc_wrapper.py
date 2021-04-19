@@ -63,7 +63,7 @@ class LocWrapper(torch.nn.Module):
         
 
     @torch.no_grad()
-    def predict_video(self, checkUploadCanceled, onProgressUpload, item_id, original_video_path, predicted_video_path):
+    def predict_video(self, checkUploadCanceled, onProgressUpload, onFishCounted, item_id, original_video_path, predicted_video_path):
         self.eval()
         # if not os.path.exists(base_dir_video):
         #     os.makedirs(base_dir_video)
@@ -76,13 +76,14 @@ class LocWrapper(torch.nn.Module):
         VIDEO_HEIGHT = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         VIDEO_FPS = cap.get(cv2.CAP_PROP_FPS)
         out = cv2.VideoWriter(predicted_video_path, cv2.VideoWriter_fourcc('V','P','8','0'), VIDEO_FPS,(VIDEO_WIDTH,VIDEO_HEIGHT))
-        frameCounter = 0
+        frame_counter = 0
+        predict_count_arr = np.zeros((ALL_FRAMES_COUNT))
         while(True):
             isCanceled = checkUploadCanceled(item_id)
             if isCanceled:
                 break
-            onProgressUpload(item_id, frameCounter / ALL_FRAMES_COUNT)
-            frameCounter += 1
+            onProgressUpload(item_id, frame_counter / ALL_FRAMES_COUNT)
+            
             ret, o_frame = cap.read()
             if o_frame is None:
                 break
@@ -92,10 +93,14 @@ class LocWrapper(torch.nn.Module):
             probs = logits.sigmoid().cpu().numpy()
             blobs = lcfcn_loss.get_blobs(probs=probs)
             pred_blobs = blobs.squeeze()
+            pred_counts = (np.unique(pred_blobs)!=0).sum()
+            predict_count_arr[frame_counter] = pred_counts
             result = hi.mask_on_image(o_frame, pred_blobs)
             result = (result * 255).astype('uint8')
             out.write(result)
+            frame_counter += 1
         out.release()
+        onFishCounted(item_id, predict_count_arr)
 
 
     @torch.no_grad()
