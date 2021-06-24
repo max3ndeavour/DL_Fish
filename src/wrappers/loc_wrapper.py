@@ -79,10 +79,12 @@ class LocWrapper(torch.nn.Module):
         frame_counter = 0
         predict_count_arr = np.zeros((ALL_FRAMES_COUNT))
         while(True):
-            isCanceled = checkUploadCanceled(item_id)
-            if isCanceled:
+            is_canceled = checkUploadCanceled(item_id)
+            if is_canceled:
                 break
-            onProgressUpload(item_id, frame_counter / ALL_FRAMES_COUNT)
+            progress = frame_counter / ALL_FRAMES_COUNT
+            #dont set progress to 1 only when all data is written to database
+            onProgressUpload(item_id, progress if progress < 1  else 0.99999999999999)
             
             ret, o_frame = cap.read()
             if o_frame is None:
@@ -100,7 +102,8 @@ class LocWrapper(torch.nn.Module):
             out.write(result)
             frame_counter += 1
         out.release()
-        onFishCounted(item_id, predict_count_arr)
+        if not is_canceled:
+            onFishCounted(item_id, predict_count_arr)
 
 
     @torch.no_grad()
