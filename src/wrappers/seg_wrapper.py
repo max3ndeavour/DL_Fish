@@ -1,14 +1,14 @@
 import torch
 import torch.nn.functional as F
-import torchvision
-from torchvision import transforms
+#import torchvision
+#from torchvision import transforms
 import os
 import numpy as np
 import time
-from DeepFish.src import utils as ut
-from sklearn.metrics import confusion_matrix
+from src import utils as ut
+#from sklearn.metrics import confusion_matrix
 import skimage
-from DeepFish.src import wrappers
+from src import wrappers
 from haven import haven_utils as hu
 
 
@@ -33,14 +33,14 @@ class SegWrapper(torch.nn.Module):
         
         self.train()
 
-        images = batch["images"].cuda()
+        images = batch["images"]
 
         logits = self.model.forward(images)
         p_log = F.log_softmax(logits, dim=1)
         p = F.softmax(logits, dim=1)
         FL = p_log*(1.-p)**2.
 
-        loss = F.nll_loss(FL, batch["mask_classes"].cuda().long())
+        loss = F.nll_loss(FL, batch["mask_classes"].long())
 
         loss.backward()
         self.opt.step()
@@ -50,14 +50,14 @@ class SegWrapper(torch.nn.Module):
     def val_on_batch(self, batch, **extras):
         pred_seg = self.predict_on_batch(batch)
 
-        cm_pytorch = confusion(torch.from_numpy(pred_seg).cuda().float(), 
-                                batch["mask_classes"].cuda().float())
+        cm_pytorch = confusion(torch.from_numpy(pred_seg).float(), 
+                                batch["mask_classes"].float())
             
         return cm_pytorch
 
     def predict_on_batch(self, batch):
         self.eval()
-        images = batch["images"].cuda()
+        images = batch["images"]
         pred_mask = self.model.forward(images).data.max(1)[1].squeeze().cpu().numpy()
 
         return pred_mask[None]

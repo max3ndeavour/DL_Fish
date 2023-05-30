@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(0,"../..")
 import torch.nn as nn
 import torch
 from torchvision import models
@@ -20,7 +22,7 @@ import numpy as np
 from torch import optim
 # from haven._toolbox import misc as ms
 import numba
-from DeepFish.src import utils as ut
+from src import utils as ut
 import cv2
 
 

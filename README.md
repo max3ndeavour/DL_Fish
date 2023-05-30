@@ -10,9 +10,18 @@
 
 
 ## Install requirements
+
+Freezing has been done with this command because done from a conda env to avoid format issues: 
+
+`pip list --format=freeze > requirements.txt `
+
+Then installation itself:
+
 `pip install -r requirements.txt` 
 
 `pip install git+https://github.com/ElementAI/LCFCN`
+
+Note that the pytorch installation is q bit different to get the pytorch version compatible with Mac M1 chip as suggested [there](https://stackoverflow.com/questions/68820453/how-to-run-pytorch-on-macbook-pro-m1-gpu)
 
 ## Download
 

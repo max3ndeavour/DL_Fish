@@ -9,8 +9,7 @@ import torch.nn.functional as F
 import torch
 import torch.nn.functional as F
 import numpy as np
-from skimage.morphology import watershed
-from skimage.segmentation import find_boundaries
+#from skimage.segmentation import find_boundaries, watershed
 from scipy import ndimage
 
 class FCN8(nn.Module):

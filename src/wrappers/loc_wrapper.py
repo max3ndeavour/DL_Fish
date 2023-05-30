@@ -6,18 +6,18 @@ import os
 import numpy as np
 import time
 from lcfcn import lcfcn_loss
-from DeepFish.src import utils as ut
-from sklearn.metrics import confusion_matrix
+from src import utils as ut
+#from sklearn.metrics import confusion_matrix
 import skimage
-from DeepFish.src import wrappers
-from skimage import morphology as morph
+from src import wrappers
+#from skimage import morphology as morph
 from skimage.segmentation import watershed
 from skimage.segmentation import find_boundaries
 from scipy import ndimage
 from haven import haven_utils as hu
 from haven import haven_img as hi
 import cv2
-from skimage.segmentation import mark_boundaries
+#from skimage.segmentation import mark_boundaries
 
 class LocWrapper(torch.nn.Module):
     def __init__(self, model, opt):
@@ -38,8 +38,8 @@ class LocWrapper(torch.nn.Module):
     def train_on_batch(self, batch, **extras):
         
         self.train()
-        images = batch["images"].cuda()
-        points = batch["points"].long().cuda()
+        images = batch["images"]
+        points = batch["points"].long()
         logits = self.model.forward(images)
         loss = lcfcn_loss.compute_loss(points=points, probs=logits.sigmoid())
 
@@ -51,8 +51,8 @@ class LocWrapper(torch.nn.Module):
     @torch.no_grad()
     def val_on_batch(self, batch):
         self.eval()
-        images = batch["images"].cuda()
-        points = batch["points"].long().cuda()
+        images = batch["images"]
+        points = batch["points"].long()
         logits = self.model.forward(images)
         probs = logits.sigmoid().cpu().numpy()
 
@@ -90,7 +90,7 @@ class LocWrapper(torch.nn.Module):
             if o_frame is None:
                 break
             frame = trans(o_frame)
-            frame = frame[None,:,:,:].cuda()
+            frame = frame[None,:,:,:]
             logits = self.model.forward(frame)
             probs = logits.sigmoid().cpu().numpy()
             blobs = lcfcn_loss.get_blobs(probs=probs)
@@ -109,8 +109,8 @@ class LocWrapper(torch.nn.Module):
     @torch.no_grad()
     def vis_on_batch(self, batch, savedir_image):
         self.eval()
-        images = batch["images"].cuda()
-        points = batch["points"].long().cuda()
+        images = batch["images"]
+        points = batch["points"].long()
         logits = self.model.forward(images)
         probs = logits.sigmoid().cpu().numpy()
 
@@ -241,9 +241,9 @@ def lc_loss(model, batch):
 
     blob_dict = get_blob_dict(model, batch)
     # put variables in cuda
-    images = batch["images"].cuda()
-    points = batch["points"].cuda()
-    counts = batch["counts"].cuda()
+    images = batch["images"]
+    points = batch["points"]
+    counts = batch["counts"]
 
     return lc_loss_base(model, images, points, counts, blob_dict)
     # print(images.shape)
@@ -283,7 +283,7 @@ def lc_loss_base(logits, images, points, counts, blob_dict):
         T = watersplit(S_npy[l], points_class)
         T = 1 - T
         scale = float(counts.sum())
-        loss += float(scale) * F.nll_loss(S_log, torch.LongTensor(T).cuda()[None],
+        loss += float(scale) * F.nll_loss(S_log, torch.LongTensor(T)[None],
                                           ignore_index=1, reduction='mean')
 
     return loss / N
@@ -294,7 +294,7 @@ def compute_image_loss(S, Counts):
     n, k, h, w = S.size()
 
     # GET TARGET
-    ones = torch.ones(Counts.size(0), 1).long().cuda()
+    ones = torch.ones(Counts.size(0), 1).long()
     BgFgCounts = torch.cat([ones.float(), Counts.float()], 1)
     Target = (BgFgCounts.view(n * k).view(-1) > 0).view(-1).float()
 
@@ -322,7 +322,7 @@ def compute_fp_loss(S_log, blob_dict):
         T = np.ones(blobs.shape[-2:])
         T[blobs[b["class"]] == b["label"]] = 0
 
-        loss += scale * F.nll_loss(S_log, torch.LongTensor(T).cuda()[None],
+        loss += scale * F.nll_loss(S_log, torch.LongTensor(T)[None],
                                    ignore_index=1, reduction='mean')
 
         n_terms += 1
@@ -330,7 +330,7 @@ def compute_fp_loss(S_log, blob_dict):
 
 
 def compute_bg_loss(S_log, bg_mask):
-    loss = F.nll_loss(S_log, torch.LongTensor(bg_mask).cuda()[None],
+    loss = F.nll_loss(S_log, torch.LongTensor(bg_mask)[None],
                       ignore_index=1, reduction='mean')
     return loss
 
@@ -356,7 +356,7 @@ def compute_split_loss(S_log, S, points, blob_dict):
         T = 1 - T
 
         scale = b["n_points"] + 1
-        loss += float(scale) * F.nll_loss(S_log, torch.LongTensor(T).cuda()[None],
+        loss += float(scale) * F.nll_loss(S_log, torch.LongTensor(T)[None],
                                           ignore_index=1, reduction='mean')
 
     return loss

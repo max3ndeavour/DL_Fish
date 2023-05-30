@@ -1,15 +1,14 @@
 import torch
 import torch.nn.functional as F
-import torchvision
-from torchvision import transforms
+#import torchvision
+#from torchvision import transforms
 import os
 import numpy as np
 import time
-from DeepFish.src import utils as ut
+from src import utils as ut
 from sklearn.metrics import confusion_matrix
 import skimage
-from DeepFish.src import wrappers
-from torchvision import transforms
+from src import wrappers
 
 
 class ClfWrapper(torch.nn.Module):
@@ -31,8 +30,8 @@ class ClfWrapper(torch.nn.Module):
     def train_on_batch(self, batch, **extras):
         self.opt.zero_grad()
         
-        labels = batch["labels"].cuda()
-        logits = self.model.forward(batch["images"].cuda())
+        labels = batch["labels"]
+        logits = self.model.forward(batch["images"])
         loss_clf =  F.binary_cross_entropy_with_logits(logits.squeeze(),
                         labels.squeeze().float(), reduction="mean")
         loss_clf.backward()
@@ -46,7 +45,7 @@ class ClfWrapper(torch.nn.Module):
         return (pred_clf.cpu().numpy().ravel() != batch["labels"].numpy().ravel())
         
     def predict_on_batch(self, batch):
-        images = batch["images"].cuda()
+        images = batch["images"]
         n = images.shape[0]
         logits = self.model.forward(images)
         return (torch.sigmoid(logits) > 0.5).float()
