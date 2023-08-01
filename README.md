@@ -10,10 +10,12 @@
 
 ## Prerequisites: 
 
-**Install tkn** from [here](https://docs.openshift.com/container-platform/4.5/cli_reference/tkn_cli/installing-tkn.html)
-To add directory to the path add this line to the ~/.bashrc / ~/.zshrc ... terminal manager:
-export PATH=$PATH:/path/to/directory
+**Install tkn** 
+`brew install tektoncd-cli`
 
+**Install tekton extension**
+tkn hub install task git-clone --version 0.9
+tkn hub install task flake8
 
 ## Install requirements
 
